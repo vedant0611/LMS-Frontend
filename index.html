@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Management System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        header {
+            background: #333;
+            color: #fff;
+            padding: 10px 20px;
+            text-align: center;
+        }
+        section {
+            padding: 20px;
+        }
+        form {
+            background: #fff;
+            padding: 20px;
+            margin: 10px auto;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 400px;
+        }
+        input[type="text"], input[type="password"], select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #333;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #555;
+        }
+        .response {
+            margin-top: 10px;
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+        .toggle {
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Library Management System</h1>
+</header>
+
+<section>
+    <h2 id="formTitle">Login</h2>
+    <form id="authForm">
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <select id="role" required>
+            <option value="" disabled selected>Select Role</option>
+            <option value="admin">Admin</option>
+            <option value="member">Member</option>
+        </select>
+        <button type="submit" id="submitButton">Login</button>
+    </form>
+    <div id="loginResponse" class="response"></div>
+    <div class="toggle">
+        <span id="toggleText">Don't have an account? Sign up</span>
+    </div>
+</section>
+
+<script>
+    const apiUrl = 'http://127.0.0.1:8000'; // Change this to your backend URL if needed
+
+    document.getElementById('authForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const role = document.getElementById('role').value;
+        const responseElement = document.getElementById('loginResponse');
+
+        const isLogin = document.getElementById('submitButton').innerText === 'Login';
+
+        try {
+            const response = await fetch(`${apiUrl}/${isLogin ? 'signin' : 'signup'}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password, role })
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                // Redirect to the appropriate dashboard based on role
+                if (result.role === 'admin') {
+                    window.location.href = 'admin_dashboard.html'; // Admin dashboard
+                } else if (result.role === 'member') {
+                    window.location.href = 'member_dashboard.html'; // Member dashboard
+                } else {
+                    responseElement.textContent = 'Invalid role.';
+                }
+            } else {
+                responseElement.textContent = result.detail || 'Operation failed!';
+            }
+        } catch (error) {
+            responseElement.textContent = 'Error: ' + error.message;
+        }
+    });
+
+    document.getElementById('toggleText').addEventListener('click', () => {
+        const formTitle = document.getElementById('formTitle');
+        const submitButton = document.getElementById('submitButton');
+
+        if (submitButton.innerText === 'Login') {
+            formTitle.innerText = 'Sign Up';
+            submitButton.innerText = 'Sign Up';
+            document.getElementById('toggleText').innerText = 'Already have an account? Login';
+        } else {
+            formTitle.innerText = 'Login';
+            submitButton.innerText = 'Login';
+            document.getElementById('toggleText').innerText = "Don't have an account? Sign up";
+        }
+    });
+</script>
+
+</body>
+</html>
